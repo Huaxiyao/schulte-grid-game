@@ -83,10 +83,10 @@ fun GridCell(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (isDone) "✓" else item,
+            text = item, // 点过后不变成 ✓，保留数字可见
             color = textColor,
-            fontSize = if (isDone) fontSize * 0.7f else fontSize,
-            fontWeight = if (isDone) FontWeight.Bold else FontWeight.SemiBold,
+            fontSize = fontSize,
+            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
     }
