@@ -193,7 +193,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             while (true) {
                 val elapsed = System.currentTimeMillis() - startTimeMs
                 _gameState.value = _gameState.value.copy(elapsedMs = elapsed)
-                delay(16L) // ~60fps
+                delay(33L) // ~30fps（省电省 CPU，计时器不需要 60fps）
             }
         }
     }
