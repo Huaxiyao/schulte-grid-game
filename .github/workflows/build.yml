@@ -29,6 +29,10 @@ jobs:
         with:
           gradle-version: "8.5"
 
+      - name: 📦 Install required SDK components
+        run: |
+          yes | sdkmanager "platforms;android-34" "build-tools;34.0.0" > /dev/null 2>&1 || true
+
       - name: 🏗️ Build Debug APK
         run: gradle assembleDebug
         working-directory: schulte-grid-android
