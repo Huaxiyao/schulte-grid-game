@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>舒尔特方格</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ========== theme ========== */
+  :root {
+    --bg:            #f0f2f5;
+    --card:          #ffffff;
+    --text:          #1a1a2e;
+    --sub:           #6b7280;
+    --accent:        #4f46e5;
+    --accent-light:  #e0e7ff;
+    --accent-glow:   rgba(79,70,229,.25);
+    --correct:       #10b981;
+    --wrong:         #ef4444;
+    --grid-bg:       #e5e7eb;
+    --border:        #d1d5db;
+    --overlay:       rgba(255,255,255,.92);
+    --shadow:        0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-lg:     0 10px 25px rgba(0,0,0,.1);
+    --radius:        12px;
+    --radius-sm:     8px;
+  }
+
+  [data-theme="dark"] {
+    --bg:            #0f172a;
+    --card:          #1e293b;
+    --text:          #e2e8f0;
+    --sub:           #94a3b8;
+    --accent:        #818cf8;
+    --accent-light:  #312e81;
+    --accent-glow:   rgba(129,140,248,.3);
+    --correct:       #34d399;
+    --wrong:         #f87171;
+    --grid-bg:       #334155;
+    --border:        #475569;
+    --overlay:       rgba(15,23,42,.94);
+    --shadow:        0 1px 3px rgba(0,0,0,.3);
+    --shadow-lg:     0 10px 25px rgba(0,0,0,.45);
+  }
+
+  /* ========== base ========== */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: background .3s, color .3s;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 540px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* ========== header ========== */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+  .badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .header-toggles {
+    display: flex;
+    gap: 4px;
+  }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    color: var(--text);
+    line-height: 1;
+  }
+  .icon-btn:hover { background: var(--grid-bg); }
+  .icon-btn.active { background: var(--accent-light); border-color: var(--accent); }
+
+
+  /* ========== controls ========== */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .size-group {
+    display: flex;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .size-group button {
+    border: none;
+    background: var(--card);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--sub);
+    transition: all .15s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .size-group button:not(:last-child) { border-right: 1px solid var(--border); }
+  .size-group button.active { background: var(--accent); color: #fff; }
+  .size-group button:hover:not(.active) { background: var(--grid-bg); }
+
+  .btn {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    padding: 7px 14px;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { background: var(--grid-bg); }
+  .btn-outline.on {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ========== info bar ========== */
+  .info-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 10px 16px;
+  }
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .info-item:first-child { flex: 1; }
+  .info-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--sub);
+  }
+  .info-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    min-width: 1.8ch;
+    text-align: center;
+    transition: transform .15s;
+  }
+  .info-number.pop { animation: popIn .25s ease; }
+  @keyframes popIn {
+    0% { transform: scale(1.4); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .info-value {
+    font-size: 1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .info-item.hidden-stat { opacity: 0.25; filter: blur(3px); pointer-events: none; user-select: none; }
+
+  /* ========== grid ========== */
+  .grid-wrapper {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 20px;
+    position: relative;
+  }
+  .grid {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  .cell {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--grid-bg);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .1s, background .12s, color .12s, box-shadow .12s, opacity .2s;
+    position: relative;
+    outline: none;
+  }
+  @media (hover: hover) {
+    .cell:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+  }
+  .cell:active { transform: scale(0.96); }
+  .cell.done {
+    background: var(--correct);
+    color: #fff;
+    cursor: default;
+    pointer-events: none;
+  }
+  .cell.wrong {
+    animation: shake .4s ease;
+    background: var(--wrong);
+    color: #fff;
+  }
+  .cell.focused {
+    box-shadow: 0 0 0 3px var(--accent), 0 0 14px var(--accent-glow);
+    z-index: 2;
+  }
+  .cell.countdown-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-6px); }
+    30% { transform: translateX(6px); }
+    45% { transform: translateX(-4px); }
+    60% { transform: translateX(4px); }
+    75% { transform: translateX(-2px); }
+    90% { transform: translateX(2px); }
+  }
+
+  /* ========== countdown overlay ========== */
+  .cd-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--overlay);
+    border-radius: var(--radius);
+    z-index: 10;
+    cursor: pointer;
+    transition: opacity .3s;
+  }
+  .cd-overlay.hidden { opacity: 0; pointer-events: none; }
+  .cd-number {
+    font-size: 5rem;
+    font-weight: 900;
+    color: var(--accent);
+    animation: cdPop .5s ease;
+  }
+  @keyframes cdPop {
+    0% { transform: scale(2); opacity: 0; }
+    50% { transform: scale(0.9); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ========== completion ========== */
+  .completion {
+    text-align: center;
+    padding: 24px 20px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .completion.show { display: flex; }
+  .completion h2 { font-size: 1.4rem; color: var(--correct); }
+  .completion .time { font-size: 2.4rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .completion .detail { color: var(--sub); font-size: 0.78rem; }
+  @keyframes wavePulse {
+    0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+    50% { box-shadow: 0 0 14px 3px var(--accent-glow); transform: scale(1.06); }
+    100% { box-shadow: 0 0 0 0 transparent; transform: scale(1); }
+  }
+  .cell.wave {
+    animation: wavePulse .4s ease var(--wave-delay) both;
+  }
+
+  /* ========== records / history ========== */
+  .records {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 18px;
+  }
+  .records-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .records-header h3 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .clear-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--sub);
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    font-family: inherit;
+    transition: all .12s;
+  }
+  .clear-btn:hover { background: var(--wrong); color: #fff; border-color: var(--wrong); }
+  .record-row, .history-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 0.82rem;
+  }
+  .record-row .best { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .no-record { color: #9ca3af; font-size: 0.78rem; }
+  .history-row .trend { font-size: 0.75rem; font-weight: 600; min-width: 5ch; text-align: right; }
+  .trend.faster { color: var(--correct); }
+  .trend.slower { color: var(--wrong); }
+  .trend.neutral { color: var(--sub); }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+
+  /* ========== grid font sizes ========== */
+  .grid.size-3 .cell { font-size: 2rem; }
+  .grid.size-4 .cell { font-size: 1.5rem; }
+  .grid.size-5 .cell { font-size: 1.25rem; }
+  .grid.size-6 .cell { font-size: 1.05rem; }
+  .grid.size-7 .cell { font-size: 0.9rem; }
+
+  /* ========== responsive ========== */
+  @media (max-width: 420px) {
+    .container { gap: 10px; max-width: 100%; }
+    .grid-wrapper { padding: 8px; }
+    .grid { gap: 4px; }
+    .cell { border-radius: 5px; }
+    .header h1 { font-size: 1.15rem; }
+    .info-number { font-size: 1.2rem; }
+    .info-value { font-size: 0.85rem; }
+    .info-row { padding: 8px 12px; gap: 10px; }
+    .cd-number { font-size: 3rem; }
+  }
+  @media (max-width: 360px) {
+    .grid.size-7 { gap: 2px; }
+    .grid.size-6 { gap: 3px; }
+    .grid-wrapper { padding: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- ===== header ===== -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🧠 舒尔特方格</h1>
+      <span class="badge" id="modeBadge">专注力训练</span>
+    </div>
+    <div class="header-toggles">
+      <button class="icon-btn" id="btnDark" title="切换主题" aria-label="切换主题">🌙</button>
+      <button class="icon-btn active" id="btnSound" title="音效" aria-label="音效开关">🔊</button>
+      <button class="icon-btn active" id="btnShowTimer" title="显示计时" aria-label="显示/隐藏计时器">👁</button>
+      <button class="icon-btn" id="btnCountdown" title="倒计时" aria-label="倒计时开关">⏳</button>
+    </div>
+  </div>
+
+  <!-- ===== controls ===== -->
+  <div class="controls">
+    <div class="size-group" id="sizeGroup">
+      <button data-size="3">3×3</button>
+      <button data-size="4">4×4</button>
+      <button data-size="5" class="active">5×5</button>
+      <button data-size="6">6×6</button>
+      <button data-size="7">7×7</button>
+    </div>
+    <button class="btn btn-outline" id="btnReverse">🔄 反向</button>
+    <button class="btn btn-primary" id="btnRestart">🔁 重新开始</button>
+  </div>
+
+  <!-- ===== info bar ===== -->
+  <div class="info-row">
+    <div class="info-item">
+      <span class="info-label">下一个</span>
+      <span class="info-number" id="nextTargetNum" aria-live="polite" aria-atomic="true">1</span>
+    </div>
+    <div class="info-item" id="statTime">
+      <span class="info-label">⏱</span>
+      <span class="info-value" id="timer">0.00s</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">🎯</span>
+      <span class="info-value" id="progress">0 / 25</span>
+    </div>
+  </div>
+
+  <!-- ===== grid ===== -->
+  <div class="grid-wrapper" id="gridWrapper">
+    <div class="grid size-5" id="grid" role="grid" aria-label="舒尔特方格"></div>
+    <div class="cd-overlay hidden" id="cdOverlay">
+      <span class="cd-number" id="cdNumber"></span>
+    </div>
+  </div>
+
+  <!-- ===== completion ===== -->
+  <div class="completion" id="completion">
+    <h2>🎉 完成!</h2>
+    <div class="time" id="completionTime"></div>
+    <div class="detail" id="completionDetail"></div>
+    <button class="btn btn-primary" id="btnPlayAgain">🔁 再来一局</button>
+  </div>
+
+  <!-- ===== records + history ===== -->
+  <div class="records" id="records">
+    <div class="records-header">
+      <h3>🏆 最佳记录</h3>
+      <button class="clear-btn" id="btnClearRecords">清除</button>
+    </div>
+    <div id="recordsList"></div>
+    <hr class="divider" id="historyDivider" style="display:none">
+    <h3 id="historyHeader" style="display:none">📜 最近记录</h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ==================== AUDIO ====================
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function playTone(freq, duration, type = 'sine', vol = 0.12) {
+    if (!soundEnabled) return;
+    try {
+      ensureAudio();
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + duration);
+    } catch { /* audio not available */ }
+  }
+  function sfxCorrect()  { playTone(880, 0.06, 'sine', 0.09); }
+  function sfxWrong()    { playTone(180, 0.18, 'square', 0.07); }
+  function sfxComplete() {
+    [523, 659, 784].forEach((f, i) => {
+      setTimeout(() => playTone(f, 0.15, 'sine', 0.1), i * 80);
+    });
+  }
+  function sfxCountdown() { playTone(660, 0.08, 'sine', 0.06); }
+
+  // ==================== SETTINGS ====================
+  let darkMode = false;
+  let soundEnabled = true;
+  let showTimer = true;
+  let showCountdown = false;
+  let reverseMode = false;
+
+  function loadSettings() {
+    try {
+      const s = JSON.parse(localStorage.getItem('schulte_settings'));
+      if (s) {
+        darkMode = s.darkMode ?? autoDark();
+        soundEnabled = s.soundEnabled ?? true;
+        showTimer = s.showTimer ?? true;
+        showCountdown = s.showCountdown ?? false;
+        reverseMode = s.reverseMode ?? false;
+      } else {
+        darkMode = autoDark();
+      }
+    } catch { darkMode = autoDark(); }
+    applyDarkMode();
+    applySoundBtn();
+    applyTimerVisibility();
+    applyCountdownBtn();
+    applyReverseBtn();
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem('schulte_settings', JSON.stringify({
+        darkMode, soundEnabled, showTimer, showCountdown, reverseMode
+      }));
+    } catch { /* quota exceeded */ }
+  }
+
+  function autoDark() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function applyDarkMode() {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    $btnDark.textContent = darkMode ? '☀️' : '🌙';
+  }
+
+  function applySoundBtn() {
+    $btnSound.textContent = soundEnabled ? '🔊' : '🔇';
+    $btnSound.classList.toggle('active', soundEnabled);
+  }
+
+  function applyTimerVisibility() {
+    $btnShowTimer.textContent = showTimer ? '👁' : '👁‍🗨';
+    $btnShowTimer.classList.toggle('active', showTimer);
+    $statTime.classList.toggle('hidden-stat', !showTimer);
+    if (!showTimer) $timer.textContent = '--';
+    else $timer.textContent = fmtTime(elapsedMs);
+  }
+
+  function applyCountdownBtn() {
+    $btnCountdown.classList.toggle('active', showCountdown);
+  }
+  function applyReverseBtn() {
+    $btnReverse.classList.toggle('on', reverseMode);
+    $modeBadge.textContent = reverseMode ? '反向模式' : '专注力训练';
+  }
+
+  // ==================== STATE ====================
+  let gridSize = 5;
+  let numbers = [];
+  let currentTarget = 1;
+  let totalNumbers = 25;
+  let startTime = null;
+  let timerRAF = null;
+  let elapsedMs = 0;
+  let clicks = 0;
+  let gameActive = false;
+  let gameFinished = false;
+  let timerStarted = false;
+  let keyboardFocusIndex = 0;  // index into cells for arrow-key nav
+  let countdownActive = false;
+
+  // ==================== DOM REFS ====================
+  const $grid = document.getElementById('grid');
+  const $timer = document.getElementById('timer');
+  const $progress = document.getElementById('progress');
+  const $completion = document.getElementById('completion');
+  const $completionTime = document.getElementById('completionTime');
+  const $completionDetail = document.getElementById('completionDetail');
+  const $recordsList = document.getElementById('recordsList');
+  const $historyList = document.getElementById('historyList');
+  const $historyDivider = document.getElementById('historyDivider');
+  const $historyHeader = document.getElementById('historyHeader');
+  const $sizeGroup = document.getElementById('sizeGroup');
+  const $nextTargetNum = document.getElementById('nextTargetNum');
+  const $cdOverlay = document.getElementById('cdOverlay');
+  const $cdNumber = document.getElementById('cdNumber');
+  const $btnDark = document.getElementById('btnDark');
+  const $btnSound = document.getElementById('btnSound');
+  const $btnShowTimer = document.getElementById('btnShowTimer');
+  const $btnCountdown = document.getElementById('btnCountdown');
+  const $btnReverse = document.getElementById('btnReverse');
+  const $statTime = document.getElementById('statTime');
+  const $modeBadge = document.getElementById('modeBadge');
+
+  // ==================== STORAGE ====================
+  const KEY_BEST = 'schulte_grid_best';
+  const KEY_HISTORY = 'schulte_grid_history';
+
+  function loadRecords() {
+    try { return JSON.parse(localStorage.getItem(KEY_BEST)) || {}; }
+    catch { return {}; }
+  }
+  function saveRecord(size, ms) {
+    const records = loadRecords();
+    if (!records[size] || ms < records[size]) {
+      records[size] = ms;
+      localStorage.setItem(KEY_BEST, JSON.stringify(records));
+      return true;
+    }
+    return false;
+  }
+  function getRecord(size) {
+    return loadRecords()[size] || null;
+  }
+
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(KEY_HISTORY)) || []; }
+    catch { return []; }
+  }
+  function addHistory(entry) {
+    const h = loadHistory();
+    h.unshift(entry);
+    if (h.length > 20) h.length = 20;
+    localStorage.setItem(KEY_HISTORY, JSON.stringify(h));
+  }
+
+  function renderRecords() {
+    const records = loadRecords();
+    const sizes = [3, 4, 5, 6, 7];
+    let html = '';
+    let hasAny = false;
+    for (const s of sizes) {
+      const ms = records[s];
+      if (ms !== undefined) {
+        hasAny = true;
+        html += `<div class="record-row"><span>${s}×${s}</span><span class="best">${fmtTime(ms)}</span></div>`;
+      }
+    }
+    if (!hasAny) html = '<div class="no-record">还没有记录，开始游戏吧!</div>';
+    $recordsList.innerHTML = html;
+  }
+
+  function renderHistory() {
+    const history = loadHistory();
+    const recent = history.slice(0, 5);
+    if (recent.length === 0) {
+      $historyList.innerHTML = '';
+      $historyDivider.style.display = 'none';
+      $historyHeader.style.display = 'none';
+      return;
+    }
+    $historyDivider.style.display = '';
+    $historyHeader.style.display = '';
+
+    // compute per-size averages from last 10 for trend
+    const sizeAvgs = {};
+    const sizeCounts = {};
+    for (const e of history.slice(0, 10)) {
+      const k = e.size + (e.reverse ? 'r' : '');
+      if (!sizeAvgs[k]) { sizeAvgs[k] = 0; sizeCounts[k] = 0; }
+      sizeAvgs[k] += e.time;
+      sizeCounts[k]++;
+    }
+    for (const k in sizeAvgs) sizeAvgs[k] /= sizeCounts[k];
+
+    let html = '';
+    for (let i = 0; i < recent.length; i++) {
+      const e = recent[i];
+      const k = e.size + (e.reverse ? 'r' : '');
+      const avg = sizeAvgs[k];
+      let trendClass = 'neutral';
+      let trendText = '—';
+      if (avg !== undefined && e.time < avg) {
+        trendClass = 'faster';
+        const diff = ((avg - e.time) / 1000).toFixed(2);
+        trendText = `↓ 快 ${diff}s`;
+      } else if (avg !== undefined && e.time > avg) {
+        trendClass = 'slower';
+        const diff = ((e.time - avg) / 1000).toFixed(2);
+        trendText = `↑ 慢 ${diff}s`;
+      }
+      const revTag = e.reverse ? ' 🔄' : '';
+      html += `<div class="history-row">
+        <span>${e.size}×${e.size}${revTag} · ${fmtTime(e.time)}</span>
+        <span class="trend ${trendClass}">${trendText}</span>
+      </div>`;
+    }
+    $historyList.innerHTML = html;
+  }
+
+  function fmtTime(ms) {
+    return (ms / 1000).toFixed(2) + 's';
+  }
+
+  // ==================== TIMER (rAF) ====================
+  function startTimer() {
+    if (timerRAF || timerStarted) return;
+    timerStarted = true;
+    startTime = performance.now() - elapsedMs;
+    tick();
+  }
+  function tick() {
+    elapsedMs = performance.now() - startTime;
+    $timer.textContent = fmtTime(elapsedMs);
+    timerRAF = requestAnimationFrame(tick);
+  }
+  function stopTimer() {
+    if (timerRAF) { cancelAnimationFrame(timerRAF); timerRAF = null; }
+    elapsedMs = performance.now() - startTime;
+    $timer.textContent = fmtTime(elapsedMs);
+  }
+  function resetTimer() {
+    stopTimer();
+    elapsedMs = 0;
+    timerStarted = false;
+    $timer.textContent = '0.00s';
+  }
+
+  // ==================== GAME ====================
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  let cellCache = [];
+  function renderGrid() {
+    $grid.innerHTML = '';
+    $grid.className = 'grid size-' + gridSize;
+    $grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+    cellCache = [];
+
+    for (let i = 0; i < numbers.length; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.tabIndex = -1;
+      cell.role = 'gridcell';
+      cell.textContent = numbers[i];
+      cell.dataset.value = numbers[i];
+      cell.dataset.index = i;
+      cell.addEventListener('click', () => handleCellClick(cell));
+      $grid.appendChild(cell);
+      cellCache.push(cell);
+    }
+  }
+
+  function handleCellClick(cell) {
+    if (!gameActive || gameFinished || countdownActive) return;
+    const value = parseInt(cell.dataset.value);
+
+    // update keyboard focus to clicked cell
+    keyboardFocusIndex = parseInt(cell.dataset.index) || 0;
+
+    if (value === currentTarget) {
+      // auto-start timer on first correct click
+      if (!timerStarted) startTimer();
+      clicks++;
+      cell.classList.add('done');
+      sfxCorrect();
+      advanceTarget();
+    } else {
+      cell.classList.add('wrong');
+      sfxWrong();
+      cell.addEventListener('animationend', () => cell.classList.remove('wrong'), { once: true });
+    }
+  }
+
+  function advanceTarget() {
+    currentTarget = getNextTarget();
+    updateProgress();
+    updateNextTargetDisplay();
+    if (currentTarget === null) {
+      finishGame();
+    }
+  }
+
+  function getNextTarget() {
+    // currentTarget is the number we just found.
+    // Next target is the next in the sequence (either ascending or descending).
+    if (reverseMode) {
+      return currentTarget > 1 ? currentTarget - 1 : null;
+    } else {
+      return currentTarget < totalNumbers ? currentTarget + 1 : null;
+    }
+  }
+
+  function updateProgress() {
+    const done = reverseMode
+      ? (totalNumbers - (currentTarget - 1))
+      : (currentTarget - 1);
+    $progress.textContent = `${Math.max(0, Math.min(done, totalNumbers))} / ${totalNumbers}`;
+  }
+
+  function updateNextTargetDisplay() {
+    if (currentTarget !== null) {
+      $nextTargetNum.textContent = currentTarget;
+      $nextTargetNum.classList.remove('pop');
+      void $nextTargetNum.offsetWidth; // reflow
+      $nextTargetNum.classList.add('pop');
+    } else {
+      $nextTargetNum.textContent = '✓';
+    }
+  }
+
+  function initGame(skipCountdown) {
+    stopTimer();
+    resetTimer();
+    totalNumbers = gridSize * gridSize;
+    numbers = shuffle(Array.from({length: totalNumbers}, (_, i) => i + 1));
+    currentTarget = reverseMode ? totalNumbers : 1;
+    clicks = 0;
+    gameActive = false;
+    gameFinished = false;
+    timerStarted = false;
+    countdownActive = !skipCountdown;
+    keyboardFocusIndex = 0;
+    $completion.classList.remove('show');
+    updateProgress();
+    updateNextTargetDisplay();
+    renderGrid();
+
+    if (countdownActive) {
+      startCountdown(() => {
+        countdownActive = false;
+        gameActive = true;
+        $grid.querySelectorAll('.cell').forEach(c => c.classList.remove('countdown-hidden'));
+        // Don't auto-start timer; it starts on first click
+      });
+    } else {
+      gameActive = true;
+    }
+  }
+
+  // ==================== COUNTDOWN ====================
+  function startCountdown(onDone) {
+    const cells = $grid.querySelectorAll('.cell');
+    cells.forEach(c => c.classList.add('countdown-hidden'));
+    $cdOverlay.classList.remove('hidden');
+    $cdNumber.style.animation = 'none';
+
+    const sequence = ['3', '2', '1', '开始!'];
+    let i = 0;
+
+    function show() {
+      if ($cdOverlay.classList.contains('hidden')) return; // skipped
+      if (i >= sequence.length) {
+        $cdOverlay.classList.add('hidden');
+        onDone();
+        return;
+      }
+      sfxCountdown();
+      $cdNumber.textContent = sequence[i];
+      $cdNumber.style.animation = 'none';
+      void $cdNumber.offsetWidth;
+      $cdNumber.style.animation = 'cdPop .5s ease';
+      i++;
+      setTimeout(show, i === sequence.length ? 400 : 600);
+    }
+
+    // click-to-skip
+    function skipHandler() {
+      $cdOverlay.removeEventListener('click', skipHandler);
+      $cdOverlay.classList.add('hidden');
+      onDone();
+    }
+    $cdOverlay.addEventListener('click', skipHandler, { once: true });
+
+    show();
+  }
+
+  // ==================== KEYBOARD NAV ====================
+  function getCells() {
+    return cellCache;
+  }
+
+  function focusCell(index) {
+    const cells = getCells();
+    cells.forEach(c => c.classList.remove('focused'));
+    if (index >= 0 && index < cells.length) {
+      cells[index].classList.add('focused');
+      keyboardFocusIndex = index;
+    }
+  }
+
+  function handleKeyboard(e) {
+    if (!gameActive || gameFinished) return;
+    const cells = getCells();
+    if (cells.length === 0) return;
+    const cols = gridSize;
+
+    let handled = true;
+    switch (e.key) {
+      case 'ArrowUp':
+        keyboardFocusIndex = (keyboardFocusIndex - cols + cells.length) % cells.length;
+        break;
+      case 'ArrowDown':
+        keyboardFocusIndex = (keyboardFocusIndex + cols) % cells.length;
+        break;
+      case 'ArrowLeft':
+        keyboardFocusIndex = (keyboardFocusIndex - 1 + cells.length) % cells.length;
+        break;
+      case 'ArrowRight':
+        keyboardFocusIndex = (keyboardFocusIndex + 1) % cells.length;
+        break;
+      case ' ':
+      case 'Enter':
+        e.preventDefault();
+        if (cells[keyboardFocusIndex]) {
+          handleCellClick(cells[keyboardFocusIndex]);
+        }
+        break;
+      default:
+        handled = false;
+    }
+    if (handled) {
+      e.preventDefault();
+      focusCell(keyboardFocusIndex);
+    }
+    // Space should NOT trigger restart when game is active
+    if (e.key === ' ' && (gameActive || countdownActive)) {
+      e.preventDefault();
+    }
+  }
+
+  // ==================== FINISH ====================
+  function finishGame() {
+    gameFinished = true;
+    gameActive = false;
+    stopTimer();
+    sfxComplete();
+
+    const finalMs = Math.round(elapsedMs);
+    const isNewBest = saveRecord(gridSize, finalMs);
+    addHistory({
+      size: gridSize,
+      time: finalMs,
+      clicks,
+      reverse: reverseMode,
+      date: new Date().toISOString()
+    });
+
+    $completionTime.textContent = fmtTime(elapsedMs);
+    let detail = `${gridSize}×${gridSize}${reverseMode ? ' 反向' : ''} · 点击 ${clicks} 次`;
+    if (isNewBest) {
+      detail += ' · 🎉 新纪录!';
+    } else {
+      const best = getRecord(gridSize);
+      if (best !== null) detail += ` · 最佳: ${fmtTime(best)}`;
+    }
+    $completionDetail.textContent = detail;
+    $completion.classList.add('show');
+    $nextTargetNum.textContent = '✓';
+    renderRecords();
+    renderHistory();
+
+    // wave sweep
+    const cells = getCells();
+    cells.forEach((c, i) => {
+      const row = Math.floor(i / gridSize);
+      const col = i % gridSize;
+      const delay = (row + col) * 25;
+      c.style.setProperty('--wave-delay', delay + 'ms');
+      c.classList.add('wave');
+      c.addEventListener('animationend', () => c.classList.remove('wave'), { once: true });
+    });
+  }
+
+  function restart() {
+    initGame(!showCountdown);
+  }
+
+  // ==================== EVENT HANDLERS ====================
+  // size buttons
+  $sizeGroup.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const size = parseInt(btn.dataset.size);
+    if (size === gridSize) return;
+    gridSize = size;
+    $sizeGroup.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    initGame(!showCountdown);
+  });
+
+  // restart
+  document.getElementById('btnRestart').addEventListener('click', restart);
+  document.getElementById('btnPlayAgain').addEventListener('click', restart);
+
+  // dark mode toggle
+  $btnDark.addEventListener('click', () => {
+    darkMode = !darkMode;
+    applyDarkMode();
+    saveSettings();
+  });
+
+  // sound toggle
+  $btnSound.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    applySoundBtn();
+    saveSettings();
+    // init audio context on user gesture
+    if (soundEnabled) ensureAudio();
+  });
+
+  // timer visibility toggle
+  $btnShowTimer.addEventListener('click', () => {
+    showTimer = !showTimer;
+    applyTimerVisibility();
+    saveSettings();
+  });
+
+  // reverse mode toggle
+  $btnReverse.addEventListener('click', () => {
+    reverseMode = !reverseMode;
+    applyReverseBtn();
+    saveSettings();
+    restart();
+  });
+
+  // countdown toggle
+  $btnCountdown.addEventListener('click', () => {
+    showCountdown = !showCountdown;
+    applyCountdownBtn();
+    saveSettings();
+  });
+
+  // clear records
+  document.getElementById('btnClearRecords').addEventListener('click', () => {
+    if (confirm('确定清除所有成绩记录?')) {
+      localStorage.removeItem(KEY_BEST);
+      localStorage.removeItem(KEY_HISTORY);
+      renderRecords();
+      renderHistory();
+    }
+  });
+
+  // keyboard: Space to restart when game is finished
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' && gameFinished && !countdownActive) {
+      e.preventDefault();
+      restart();
+      return;
+    }
+    // Arrow/nav keys during game
+    handleKeyboard(e);
+  });
+
+  // system dark mode change
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    // only auto-switch if user hasn't manually toggled
+    const s = loadSettingsRaw();
+    if (!s || s.darkMode === undefined) {
+      darkMode = e.matches;
+      applyDarkMode();
+    }
+  });
+  function loadSettingsRaw() {
+    try { return JSON.parse(localStorage.getItem('schulte_settings')); } catch { return null; }
+  }
+
+  // ==================== INIT ====================
+  // enable :active on iOS Safari
+  document.addEventListener('touchstart', () => {}, {passive: true});
+  loadSettings();
+  renderRecords();
+  renderHistory();
+  initGame(!showCountdown);
+})();
+</script>
+</body>
+</html>
