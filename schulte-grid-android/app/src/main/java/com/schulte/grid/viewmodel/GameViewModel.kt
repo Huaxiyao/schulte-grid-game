@@ -276,7 +276,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             while (true) {
                 val elapsed = pausedElapsedMs + (System.currentTimeMillis() - startTimeMs)
                 _gameState.value = _gameState.value.copy(elapsedMs = elapsed)
-                delay(33L) // ~30fps
+                delay(0L) // 无上限 — 由屏幕刷新率决定
             }
         }
     }
@@ -287,7 +287,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             while (true) {
                 val elapsed = pausedElapsedMs + (System.currentTimeMillis() - startTimeMs)
                 _gameState.value = _gameState.value.copy(elapsedMs = elapsed)
-                delay(33L)
+                delay(0L)
             }
         }
     }
