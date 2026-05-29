@@ -37,7 +37,18 @@ jobs:
         run: gradle assembleDebug
         working-directory: schulte-grid-android
 
-      - name: 📦 Upload APK
+      - name: 📤 Upload APK to Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "latest-android"
+          artifacts: "schulte-grid-android/app/build/outputs/apk/debug/*.apk"
+          allowUpdates: true
+          replacesArtifacts: true
+          artifactContentType: "application/vnd.android.package-archive"
+          omitBody: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Upload APK (Artifact)
         uses: actions/upload-artifact@v4
         with:
           name: schulte-grid-apk
