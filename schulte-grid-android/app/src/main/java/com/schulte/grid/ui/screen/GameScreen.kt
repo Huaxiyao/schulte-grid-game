@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -212,7 +216,12 @@ private fun IconToggleBtn(
 }
 
 /**
- * 网格布局
+ * 网格布局（自定义 Layout，单次测量，无权重嵌套开销）
+ *
+ * ⚡ 相比 Column+Row+weight：
+ * - 少一次测量 pass（权重需要两次测量）
+ * - 子节点测量约束更精确
+ * - 适合固定大小的网格
  */
 @Composable
 private fun GameGrid(
@@ -224,36 +233,42 @@ private fun GameGrid(
     modifier: Modifier = Modifier,
 ) {
     val gap = if (gridSize >= 6) 4.dp else 8.dp
+    val density = LocalDensity.current
+    val gapPx = with(density) { gap.toPx() }
 
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(gap),
-    ) {
-        for (row in 0 until gridSize) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(gap),
-            ) {
-                for (col in 0 until gridSize) {
-                    val index = row * gridSize + col
-                    if (index < numbers.size) {
-                        val number = numbers[index]
-                        GridCell(
-                            number = number,
-                            isDone = clickedNumbers.contains(number),
-                            isWrong = number == wrongNumber,
-                            onClick = { onCellClick(number) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
-                            gridSize = gridSize,
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
+    // 用 List 而不是多个子 composable，避免 Lambda 在重组时重建
+    Layout(
+        modifier = modifier.aspectRatio(1f).clipToBounds(),
+        content = {
+            numbers.forEach { number ->
+                GridCell(
+                    number = number,
+                    isDone = clickedNumbers.contains(number),
+                    isWrong = number == wrongNumber,
+                    onClick = { onCellClick(number) },
+                    modifier = Modifier.aspectRatio(1f),
+                    gridSize = gridSize,
+                )
+            }
+        },
+    ) { measurables, constraints ->
+        val totalSize = min(constraints.maxWidth, constraints.maxHeight)
+        val cellSize = (totalSize - gapPx * (gridSize - 1)) / gridSize
+        val cellConstraints = Constraints(
+            minWidth = cellSize,
+            maxWidth = cellSize,
+            minHeight = cellSize,
+            maxHeight = cellSize,
+        )
+        val placeables = measurables.map { it.measure(cellConstraints) }
+
+        layout(totalSize, totalSize) {
+            placeables.forEachIndexed { index, placeable ->
+                val row = index / gridSize
+                val col = index % gridSize
+                val x = (col * (cellSize + gapPx)).toInt()
+                val y = (row * (cellSize + gapPx)).toInt()
+                placeable.placeRelative(x, y)
             }
         }
     }
