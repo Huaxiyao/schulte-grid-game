@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.schulte.grid.model.GameMode
 import com.schulte.grid.model.GameRecord
 import com.schulte.grid.model.GridSize
 import kotlinx.coroutines.flow.Flow
@@ -69,6 +70,10 @@ class RecordRepository(private val context: Context) {
                     elapsedMs = obj.getLong("time"),
                     reverseMode = obj.optBoolean("reverse", false),
                     timestamp = obj.optLong("ts", System.currentTimeMillis()),
+                    gameMode = try {
+                        GameMode.entries.getOrElse(obj.getInt("mode")) { GameMode.NORMAL }
+                    } catch (_: Exception) { GameMode.NORMAL },
+                    timeChallengeScore = obj.optInt("score", 0),
                 )
             }
         } catch (_: Exception) {
@@ -89,6 +94,8 @@ class RecordRepository(private val context: Context) {
                 put("time", r.elapsedMs)
                 put("reverse", r.reverseMode)
                 put("ts", r.timestamp)
+                put("mode", r.gameMode.ordinal)
+                put("score", r.timeChallengeScore)
             })
         }
         context.recordStore.edit { prefs ->

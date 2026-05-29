@@ -5,29 +5,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.schulte.grid.model.GameMode
 import com.schulte.grid.ui.component.*
+import com.schulte.grid.ui.theme.THEMES
 import com.schulte.grid.viewmodel.GameViewModel
+import kotlin.math.min
 
 /**
  * 主游戏屏幕
  */
 @Composable
-fun GameScreen(
-    viewModel: GameViewModel,
-    modifier: Modifier = Modifier,
-) {
+fun GameScreen(viewModel: GameViewModel, modifier: Modifier = Modifier) {
     val gameState by viewModel.gameState.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val bestRecords by viewModel.bestRecords.collectAsStateWithLifecycle()
@@ -38,31 +39,25 @@ fun GameScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // ── 标题行 ──
-        HeaderRow(
-            isReverse = settings.reverseMode,
-            isDarkMode = settings.darkMode,
-            soundEnabled = settings.soundEnabled,
-            showTimer = settings.showTimer,
-            showCountdown = settings.showCountdown,
-            onToggleDark = { viewModel.toggleDarkMode() },
-            onToggleSound = { viewModel.toggleSound() },
-            onToggleTimer = { viewModel.toggleTimerVisibility() },
-            onToggleCountdown = { viewModel.toggleCountdown() },
-        )
+        // ── 标题 ──
+        HeaderRow(settings, viewModel)
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
 
         // ── 控制栏 ──
         ControlBar(
             currentSize = gameState.gridSize,
             isReverse = settings.reverseMode,
+            currentMode = settings.gameMode,
+            currentTheme = settings.themeIndex,
             onSizeSelected = { viewModel.setGridSize(it) },
             onToggleReverse = { viewModel.toggleReverseMode() },
             onRestart = { viewModel.initGame() },
+            onModeSelected = { viewModel.setGameMode(it) },
+            onThemeSelected = { viewModel.setTheme(it) },
         )
 
         Spacer(Modifier.height(4.dp))
@@ -73,179 +68,150 @@ fun GameScreen(
             elapsedMs = gameState.elapsedMs,
             progressText = gameState.progressText,
             showTimer = settings.showTimer,
+            isPaused = gameState.isPaused,
+            gameMode = settings.gameMode,
+            timeRemainingSec = gameState.timeRemainingSec,
+            onTogglePause = { viewModel.togglePause() },
         )
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
 
-        // ── 网格区域（含倒计时覆盖层） ──
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f),
-        ) {
+        // ── 网格 ──
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f)) {
+            val mode = settings.gameMode
+            val zeroTrace = mode == GameMode.ZERO_TRACE
             GameGrid(
                 gridSize = gameState.gridSize.size,
-                numbers = gameState.numbers,
-                clickedNumbers = gameState.clickedNumbers,
-                wrongNumber = gameState.wrongNumber,
-                onCellClick = { number -> viewModel.onCellClick(number) },
+                items = gameState.items,
+                clickedItems = gameState.clickedItems,
+                wrongItem = gameState.wrongItem,
+                currentTarget = gameState.currentTarget,
+                gameMode = mode,
+                onCellClick = { item, index -> viewModel.onCellClick(item, index) },
                 modifier = Modifier.fillMaxSize(),
             )
 
-            // 倒计时覆盖层
-            CountdownOverlay(
-                countdownNumber = countdownNumber,
-                modifier = Modifier.fillMaxSize(),
-            )
+            // 倒计时
+            CountdownOverlay(countdownNumber = countdownNumber, modifier = Modifier.fillMaxSize())
+
+            // 暂停覆盖层
+            if (gameState.isPaused) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clipToBounds()
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("⏸", fontSize = 48.sp)
+                        Spacer(Modifier.height(8.dp))
+                        Text("已暂停", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onSurface)
+                        Spacer(Modifier.height(16.dp))
+                        Button(onClick = { viewModel.togglePause() }) {
+                            Text("继续")
+                        }
+                    }
+                }
+            }
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
 
-        // ── 完成弹窗 ──
+        // ── 完成 ──
         if (gameState.isFinished) {
             CompletionDialog(
                 elapsedMs = gameState.elapsedMs,
-                isNewBest = false,  // 简化处理，实际可在 ViewModel 中计算
+                isNewBest = false,
+                score = if (settings.gameMode == GameMode.TIME_CHALLENGE) gameState.timeChallengeScore else null,
+                gameMode = settings.gameMode,
                 onPlayAgain = { viewModel.playAgain() },
             )
-
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
         }
 
-        // ── 记录面板 ──
-        RecordSection(
-            bestRecords = bestRecords,
-            history = history,
-            onClear = { viewModel.clearRecords() },
-        )
-
-        // 底部留白
+        // ── 记录 ──
+        RecordSection(bestRecords = bestRecords, history = history, onClear = { viewModel.clearRecords() })
         Spacer(Modifier.height(24.dp))
     }
 }
 
-/**
- * 标题行
- */
 @Composable
-private fun HeaderRow(
-    isReverse: Boolean,
-    isDarkMode: Boolean,
-    soundEnabled: Boolean,
-    showTimer: Boolean,
-    showCountdown: Boolean,
-    onToggleDark: () -> Unit,
-    onToggleSound: () -> Unit,
-    onToggleTimer: () -> Unit,
-    onToggleCountdown: () -> Unit,
-) {
+private fun HeaderRow(settings: com.schulte.grid.model.AppSettings, viewModel: GameViewModel) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // 左侧标题
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = "🧠 舒尔特方格",
-                style = MaterialTheme.typography.headlineLarge,
-            )
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("🧠 舒尔特方格", style = MaterialTheme.typography.headlineLarge)
+            Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.primaryContainer) {
                 Text(
-                    text = if (isReverse) "反向模式" else "专注力训练",
+                    text = when (settings.gameMode) {
+                        GameMode.NORMAL -> if (settings.reverseMode) "反向" else "标准"
+                        GameMode.LETTER -> "字母"
+                        GameMode.ZERO_TRACE -> "零痕迹"
+                        GameMode.TIME_CHALLENGE -> "限时"
+                    },
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
-
-        // 右侧图标按钮
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            IconToggleBtn(
-                text = if (isDarkMode) "☀️" else "🌙",
-                isActive = false,
-                onClick = onToggleDark,
-            )
-            IconToggleBtn(
-                text = if (soundEnabled) "🔊" else "🔇",
-                isActive = soundEnabled,
-                onClick = onToggleSound,
-            )
-            IconToggleBtn(
-                text = if (showTimer) "👁" else "👁‍🗨",
-                isActive = showTimer,
-                onClick = onToggleTimer,
-            )
-            IconToggleBtn(
-                text = "⏳",
-                isActive = showCountdown,
-                onClick = onToggleCountdown,
-            )
+        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            IconToggleBtn(if (settings.darkMode) "☀️" else "🌙", false) { viewModel.toggleDarkMode() }
+            IconToggleBtn(if (settings.soundEnabled) "🔊" else "🔇", settings.soundEnabled) { viewModel.toggleSound() }
+            IconToggleBtn(if (settings.showTimer) "👁" else "👁‍🗨", settings.showTimer) { viewModel.toggleTimerVisibility() }
+            IconToggleBtn("⏳", settings.showCountdown) { viewModel.toggleCountdown() }
+            IconToggleBtn(if (settings.vibrationEnabled) "📳" else "📴", settings.vibrationEnabled) { viewModel.toggleVibration() }
         }
     }
 }
 
-/**
- * 小图标切换按钮
- */
 @Composable
-private fun IconToggleBtn(
-    text: String,
-    isActive: Boolean,
-    onClick: () -> Unit,
-) {
+private fun IconToggleBtn(text: String, isActive: Boolean, onClick: () -> Unit) {
     FilledTonalIconButton(
         onClick = onClick,
         colors = IconButtonDefaults.filledTonalIconButtonColors(
-            containerColor = if (isActive)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = if (isActive) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.surfaceVariant,
         ),
-        modifier = Modifier.size(36.dp),
+        modifier = Modifier.size(32.dp),
     ) {
-        Text(text = text, fontSize = 14.sp)
+        Text(text, fontSize = 12.sp)
     }
 }
 
 /**
- * 网格布局（自定义 Layout，单次测量，无权重嵌套开销）
- *
- * ⚡ 相比 Column+Row+weight：
- * - 少一次测量 pass（权重需要两次测量）
- * - 子节点测量约束更精确
- * - 适合固定大小的网格
+ * 网格布局（自定义 Layout）
  */
 @Composable
 private fun GameGrid(
     gridSize: Int,
-    numbers: List<Int>,
-    clickedNumbers: Set<Int>,
-    wrongNumber: Int?,
-    onCellClick: (Int) -> Unit,
+    items: List<String>,
+    clickedItems: Set<String>,
+    wrongItem: String?,
+    currentTarget: String,
+    gameMode: GameMode,
+    onCellClick: (String, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val gap = if (gridSize >= 6) 4.dp else 8.dp
+    val gap = if (gridSize >= 6) 4.dp else 6.dp
     val density = LocalDensity.current
     val gapPx = with(density) { gap.toPx() }
 
-    // 用 List 而不是多个子 composable，避免 Lambda 在重组时重建
     Layout(
         modifier = modifier.aspectRatio(1f).clipToBounds(),
         content = {
-            numbers.forEach { number ->
+            items.forEachIndexed { index, item ->
                 GridCell(
-                    number = number,
-                    isDone = clickedNumbers.contains(number),
-                    isWrong = number == wrongNumber,
-                    onClick = { onCellClick(number) },
+                    item = item,
+                    isDone = clickedItems.contains(item),
+                    isWrong = item == wrongItem,
+                    isTarget = item == currentTarget && gameMode == GameMode.ZERO_TRACE,
+                    gameMode = gameMode,
+                    onClick = { onCellClick(item, index) },
                     modifier = Modifier.aspectRatio(1f),
                     gridSize = gridSize,
                 )
@@ -254,21 +220,17 @@ private fun GameGrid(
     ) { measurables, constraints ->
         val totalSize = min(constraints.maxWidth, constraints.maxHeight)
         val cellSize = (totalSize - gapPx * (gridSize - 1)) / gridSize
-        val cellConstraints = Constraints(
-            minWidth = cellSize,
-            maxWidth = cellSize,
-            minHeight = cellSize,
-            maxHeight = cellSize,
-        )
+        val cellConstraints = Constraints(cellSize, cellSize, cellSize, cellSize)
         val placeables = measurables.map { it.measure(cellConstraints) }
 
         layout(totalSize, totalSize) {
             placeables.forEachIndexed { index, placeable ->
                 val row = index / gridSize
                 val col = index % gridSize
-                val x = (col * (cellSize + gapPx)).toInt()
-                val y = (row * (cellSize + gapPx)).toInt()
-                placeable.placeRelative(x, y)
+                placeable.placeRelative(
+                    x = (col * (cellSize + gapPx)).toInt(),
+                    y = (row * (cellSize + gapPx)).toInt(),
+                )
             }
         }
     }

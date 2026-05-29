@@ -6,36 +6,46 @@ package com.schulte.grid.model
 data class GameState(
     /** 当前网格尺寸 */
     val gridSize: GridSize = GridSize.DEFAULT,
-    /** 网格中数字的排列顺序（按行展开的一维数组） */
-    val numbers: List<Int> = emptyList(),
-    /** 当前应点击的目标数字 */
-    val currentTarget: Int = 1,
-    /** 已经正确点击的数字集合 */
-    val clickedNumbers: Set<Int> = emptySet(),
-    /** 上次点击错误的数字（用于动画触发后清空） */
-    val wrongNumber: Int? = null,
+    /** 网格中内容的排列顺序（按行展开的一维数组） */
+    val items: List<String> = emptyList(),
+    /** 当前应点击的目标 */
+    val currentTarget: String = "1",
+    /** 已经正确点击的内容集合 */
+    val clickedItems: Set<String> = emptySet(),
+    /** 上次点击错误的内容（用于触发反馈后清空） */
+    val wrongItem: String? = null,
     /** 已耗时（毫秒） */
     val elapsedMs: Long = 0L,
-    /** 游戏是否可交互（倒计时时不可用） */
+    /** 游戏是否可交互 */
     val isActive: Boolean = false,
     /** 游戏是否已完成 */
     val isFinished: Boolean = false,
-    /** 计时器是否已启动（首次点击后） */
+    /** 计时器是否已启动 */
     val timerStarted: Boolean = false,
     /** 点击次数 */
     val clickCount: Int = 0,
+    /** 游戏模式 */
+    val gameMode: GameMode = GameMode.NORMAL,
+    /** 是否暂停 */
+    val isPaused: Boolean = false,
+    /** 限时模式剩余秒数 */
+    val timeRemainingSec: Int = 30,
+    /** 限时模式得分（正确点击数） */
+    val timeChallengeScore: Int = 0,
+    /** 刚刚被正确点击的格子索引（用于完成动画） */
+    val lastCorrectIndex: Int = -1,
 ) {
-    /** 总数字数 */
-    val totalNumbers: Int get() = gridSize.totalNumbers
+    /** 总项目数 */
+    val totalItems: Int get() = gridSize.totalNumbers
     /** 进度文本 */
     val progressText: String
         get() {
-            val done = clickedNumbers.size
-            return "$done / $totalNumbers"
+            val done = clickedItems.size
+            return "$done / $totalItems"
         }
     /** 下一个目标（如果游戏结束则为 null） */
-    val nextTarget: Int?
-        get() = if (clickedNumbers.size >= totalNumbers) null else currentTarget
+    val nextTarget: String?
+        get() = if (clickedItems.size >= totalItems) null else currentTarget
 }
 
 /**
@@ -47,6 +57,9 @@ data class AppSettings(
     val showTimer: Boolean = true,
     val showCountdown: Boolean = false,
     val reverseMode: Boolean = false,
+    val gameMode: GameMode = GameMode.NORMAL,
+    val themeIndex: Int = 0,
+    val vibrationEnabled: Boolean = true,
 )
 
 /**
@@ -56,5 +69,7 @@ data class GameRecord(
     val gridSize: GridSize,
     val elapsedMs: Long,
     val reverseMode: Boolean,
+    val gameMode: GameMode = GameMode.NORMAL,
+    val timeChallengeScore: Int = 0,
     val timestamp: Long = System.currentTimeMillis(),
 )

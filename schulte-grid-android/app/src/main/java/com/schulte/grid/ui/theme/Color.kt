@@ -2,28 +2,135 @@ package com.schulte.grid.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── 亮色模式 ──
-val LightBackground = Color(0xFFF0F2F5)
-val LightSurface = Color(0xFFFFFFFF)
-val LightText = Color(0xFF1A1A2E)
-val LightSub = Color(0xFF6B7280)
-val LightAccent = Color(0xFF4F46E5)
-val LightAccentLight = Color(0xFFE0E7FF)
-val LightCorrect = Color(0xFF10B981)
-val LightWrong = Color(0xFFEF4444)
-val LightGridBg = Color(0xFFE5E7EB)
-val LightBorder = Color(0xFFD1D5DB)
-val LightOverlay = Color(0xFFFFFFFF).copy(alpha = 0.92f)
+/**
+ * 主题色预设 —— 4 套配色方案
+ */
+data class ThemeColors(
+    val name: String,
+    val emoji: String,
+    // 亮色
+    val lightAccent: Color,
+    val lightAccentLight: Color,
+    val lightBackground: Color,
+    val lightSurface: Color,
+    val lightText: Color,
+    val lightSub: Color,
+    val lightCorrect: Color,
+    val lightWrong: Color,
+    val lightGridBg: Color,
+    val lightBorder: Color,
+    // 暗色
+    val darkAccent: Color,
+    val darkAccentLight: Color,
+    val darkBackground: Color,
+    val darkSurface: Color,
+    val darkText: Color,
+    val darkSub: Color,
+    val darkCorrect: Color,
+    val darkWrong: Color,
+    val darkGridBg: Color,
+    val darkBorder: Color,
+)
 
-// ── 暗色模式 ──
-val DarkBackground = Color(0xFF0F172A)
-val DarkSurface = Color(0xFF1E293B)
-val DarkText = Color(0xFFE2E8F0)
-val DarkSub = Color(0xFF94A3B8)
-val DarkAccent = Color(0xFF818CF8)
-val DarkAccentLight = Color(0xFF312E81)
-val DarkCorrect = Color(0xFF34D399)
-val DarkWrong = Color(0xFFF87171)
-val DarkGridBg = Color(0xFF334155)
-val DarkBorder = Color(0xFF475569)
-val DarkOverlay = Color(0xFF0F172A).copy(alpha = 0.94f)
+val THEMES = listOf(
+    // 0: 靛蓝（默认）
+    ThemeColors(
+        name = "靛蓝",
+        emoji = "🔵",
+        lightAccent = Color(0xFF4F46E5),
+        lightAccentLight = Color(0xFFE0E7FF),
+        lightBackground = Color(0xFFF0F2F5),
+        lightSurface = Color(0xFFFFFFFF),
+        lightText = Color(0xFF1A1A2E),
+        lightSub = Color(0xFF6B7280),
+        lightCorrect = Color(0xFF10B981),
+        lightWrong = Color(0xFFEF4444),
+        lightGridBg = Color(0xFFE5E7EB),
+        lightBorder = Color(0xFFD1D5DB),
+        darkAccent = Color(0xFF818CF8),
+        darkAccentLight = Color(0xFF312E81),
+        darkBackground = Color(0xFF0F172A),
+        darkSurface = Color(0xFF1E293B),
+        darkText = Color(0xFFE2E8F0),
+        darkSub = Color(0xFF94A3B8),
+        darkCorrect = Color(0xFF34D399),
+        darkWrong = Color(0xFFF87171),
+        darkGridBg = Color(0xFF334155),
+        darkBorder = Color(0xFF475569),
+    ),
+    // 1: 翡翠绿
+    ThemeColors(
+        name = "翡翠",
+        emoji = "🟢",
+        lightAccent = Color(0xFF059669),
+        lightAccentLight = Color(0xFFD1FAE5),
+        lightBackground = Color(0xFFF0FDF4),
+        lightSurface = Color(0xFFFFFFFF),
+        lightText = Color(0xFF022C22),
+        lightSub = Color(0xFF6B7280),
+        lightCorrect = Color(0xFF10B981),
+        lightWrong = Color(0xFFEF4444),
+        lightGridBg = Color(0xFFD1FAE5),
+        lightBorder = Color(0xFFA7F3D0),
+        darkAccent = Color(0xFF34D399),
+        darkAccentLight = Color(0xFF064E3B),
+        darkBackground = Color(0xFF022C22),
+        darkSurface = Color(0xFF064E3B),
+        darkText = Color(0xFFD1FAE5),
+        darkSub = Color(0xFF94A3B8),
+        darkCorrect = Color(0xFF6EE7B7),
+        darkWrong = Color(0xFFF87171),
+        darkGridBg = Color(0xFF065F46),
+        darkBorder = Color(0xFF047857),
+    ),
+    // 2: 玫瑰粉
+    ThemeColors(
+        name = "玫瑰",
+        emoji = "🌸",
+        lightAccent = Color(0xFFE11D48),
+        lightAccentLight = Color(0xFFFFE4E6),
+        lightBackground = Color(0xFFFFF5F5),
+        lightSurface = Color(0xFFFFFFFF),
+        lightText = Color(0xFF2D0A15),
+        lightSub = Color(0xFF6B7280),
+        lightCorrect = Color(0xFF10B981),
+        lightWrong = Color(0xFFEF4444),
+        lightGridBg = Color(0xFFFFE4E6),
+        lightBorder = Color(0xFFFECDD3),
+        darkAccent = Color(0xFFFB7185),
+        darkAccentLight = Color(0xFF4C0519),
+        darkBackground = Color(0xFF2D0A15),
+        darkSurface = Color(0xFF4C0519),
+        darkText = Color(0xFFFFE4E6),
+        darkSub = Color(0xFF94A3B8),
+        darkCorrect = Color(0xFF34D399),
+        darkWrong = Color(0xFFF87171),
+        darkGridBg = Color(0xFF881337),
+        darkBorder = Color(0xFF9F1239),
+    ),
+    // 3: 琥珀橙
+    ThemeColors(
+        name = "琥珀",
+        emoji = "🟠",
+        lightAccent = Color(0xFFD97706),
+        lightAccentLight = Color(0xFFFEF3C7),
+        lightBackground = Color(0xFFFFFBEB),
+        lightSurface = Color(0xFFFFFFFF),
+        lightText = Color(0xFF2D1B0A),
+        lightSub = Color(0xFF6B7280),
+        lightCorrect = Color(0xFF10B981),
+        lightWrong = Color(0xFFEF4444),
+        lightGridBg = Color(0xFFFEF3C7),
+        lightBorder = Color(0xFFFDE68A),
+        darkAccent = Color(0xFFFBBF24),
+        darkAccentLight = Color(0xFF451A03),
+        darkBackground = Color(0xFF2D1B0A),
+        darkSurface = Color(0xFF451A03),
+        darkText = Color(0xFFFEF3C7),
+        darkSub = Color(0xFF94A3B8),
+        darkCorrect = Color(0xFF34D399),
+        darkWrong = Color(0xFFF87171),
+        darkGridBg = Color(0xFF92400E),
+        darkBorder = Color(0xFFB45309),
+    ),
+)

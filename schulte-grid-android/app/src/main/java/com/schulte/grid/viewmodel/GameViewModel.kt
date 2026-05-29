@@ -6,10 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.schulte.grid.audio.SoundManager
 import com.schulte.grid.data.RecordRepository
 import com.schulte.grid.data.SettingsRepository
-import com.schulte.grid.model.AppSettings
-import com.schulte.grid.model.GameRecord
-import com.schulte.grid.model.GameState
-import com.schulte.grid.model.GridSize
+import com.schulte.grid.model.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -17,16 +14,13 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 /**
- * 游戏 ViewModel —— 管理所有游戏逻辑和状态
+ * 游戏 ViewModel
  *
- * 设计原则：
- * - 设置变更即时反映到内存状态，异步持久化到 DataStore
- * - 计时器通过协程循环模拟 requestAnimationFrame
- * - 音效在协程中通过 AudioTrack 实时合成
+ * 支持模式：NORMAL / LETTER / ZERO_TRACE / TIME_CHALLENGE
+ * 功能：暂停、振动、限时、主题切换
  */
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
-    // ============ 仓库 ============
     private val recordRepo = RecordRepository(application)
     private val settingsRepo = SettingsRepository(application)
     private val soundManager = SoundManager(application)
@@ -47,75 +41,90 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _countdownNumber = MutableStateFlow<Int?>(null)
     val countdownNumber: StateFlow<Int?> = _countdownNumber.asStateFlow()
 
-    // ============ 内部状态 ============
+    // ============ 内部 ============
     private var timerJob: Job? = null
     private var startTimeMs: Long = 0L
+    private var pausedElapsedMs: Long = 0L
     private var countdownJob: Job? = null
+    private var timeChallengeJob: Job? = null
 
     init {
-        // 一次性加载持久化数据
         viewModelScope.launch {
             _settings.value = settingsRepo.getSettings()
             _bestRecords.value = recordRepo.getAllBests()
             _history.value = recordRepo.getHistory()
-            // 初始化游戏（不显示倒计时）
             initGame(showCountdown = false)
         }
     }
 
     // ========================================================================
-    //  游戏生命周期
+    //  游戏初始化
     // ========================================================================
 
-    /**
-     * 初始化（或重新开始）一局游戏
-     * @param showCountdown 是否显示预备倒计时
-     */
     fun initGame(showCountdown: Boolean = _settings.value.showCountdown) {
         stopTimer()
         countdownJob?.cancel()
+        timeChallengeJob?.cancel()
 
         val size = _gameState.value.gridSize
-        val reverse = _settings.value.reverseMode
-        val total = size.totalNumbers
+        val mode = _settings.value.gameMode
 
-        // Fisher-Yates 洗牌
-        val numbers = (1..total).toMutableList()
-        for (i in numbers.indices.reversed()) {
-            val j = Random.nextInt(i + 1)
-            val tmp = numbers[i]; numbers[i] = numbers[j]; numbers[j] = tmp
+        val items = generateItems(size, mode)
+        val shuffled = items.toMutableList().also { list ->
+            for (i in list.indices.reversed()) {
+                val j = Random.nextInt(i + 1)
+                val tmp = list[i]; list[i] = list[j]; list[j] = tmp
+            }
+        }
+
+        val firstTarget = if (_settings.value.reverseMode) shuffled.size.toString() else "1"
+        // 字母模式的首个目标
+        val firstTargetStr = when (mode) {
+            GameMode.LETTER -> if (_settings.value.reverseMode) intToLetter(shuffled.size) else "A"
+            else -> firstTarget
         }
 
         _gameState.value = GameState(
             gridSize = size,
-            numbers = numbers,
-            currentTarget = if (reverse) total else 1,
-            clickedNumbers = emptySet(),
-            wrongNumber = null,
+            items = shuffled,
+            currentTarget = if (mode == GameMode.LETTER) firstTargetStr else firstTarget,
+            clickedItems = emptySet(),
+            wrongItem = null,
             elapsedMs = 0L,
             isActive = false,
             isFinished = false,
             timerStarted = false,
             clickCount = 0,
+            gameMode = mode,
+            isPaused = false,
+            timeRemainingSec = if (mode == GameMode.TIME_CHALLENGE) 30 else 30,
+            timeChallengeScore = 0,
+            lastCorrectIndex = -1,
         )
 
-        if (showCountdown) {
-            startCountdown()
-        } else {
-            _gameState.value = _gameState.value.copy(isActive = true)
+        if (showCountdown) startCountdown()
+        else _gameState.value = _gameState.value.copy(isActive = true)
+    }
+
+    private fun generateItems(size: GridSize, mode: GameMode): List<String> {
+        val count = size.totalNumbers
+        return when (mode) {
+            GameMode.LETTER -> (1..count).map { intToLetter(it) }
+            else -> (1..count).map { it.toString() }
         }
     }
 
-    /** 切换网格尺寸 */
+    private fun intToLetter(n: Int): String {
+        if (n <= 26) return ('A' + (n - 1)).toString()
+        return "${('A' + ((n - 1) / 26) - 1)}${('A' + ((n - 1) % 26))}"
+    }
+
     fun setGridSize(size: GridSize) {
         _gameState.value = _gameState.value.copy(gridSize = size)
         initGame()
     }
 
-    /** 再来一局 */
-    fun playAgain() {
-        initGame()
-    }
+    fun playAgain() = initGame()
 
     // ========================================================================
     //  倒计时
@@ -135,6 +144,30 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             delay(600)
             _countdownNumber.value = null
             _gameState.value = _gameState.value.copy(isActive = true)
+            // 限时模式激活后启动倒计时
+            if (_gameState.value.gameMode == GameMode.TIME_CHALLENGE) startTimeChallenge()
+        }
+    }
+
+    // ========================================================================
+    //  暂停
+    // ========================================================================
+
+    fun togglePause() {
+        val state = _gameState.value
+        if (!state.isActive || state.isFinished) return
+
+        if (!state.isPaused) {
+            // 暂停
+            stopTimer()
+            pausedElapsedMs = state.elapsedMs
+            timeChallengeJob?.cancel()
+            _gameState.value = state.copy(isPaused = true)
+        } else {
+            // 恢复
+            _gameState.value = state.copy(isPaused = false)
+            if (state.timerStarted) resumeTimer()
+            if (state.gameMode == GameMode.TIME_CHALLENGE) startTimeChallenge()
         }
     }
 
@@ -142,40 +175,89 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     //  点击处理
     // ========================================================================
 
-    fun onCellClick(number: Int) {
+    fun onCellClick(item: String, index: Int) {
         val state = _gameState.value
-        if (!state.isActive || state.isFinished) return
+        if (!state.isActive || state.isFinished || state.isPaused) return
 
-        if (number == state.currentTarget) {
+        if (item == state.currentTarget) {
             // 正确
-            if (!state.timerStarted) startTimer()
-            soundManager.playCorrect()
-
-            val newClicked = state.clickedNumbers + number
-            val isReverse = _settings.value.reverseMode
-            val newTarget = if (isReverse) {
-                if (number > 1) number - 1 else null
-            } else {
-                if (number < state.totalNumbers) number + 1 else null
+            if (!state.timerStarted) {
+                startTimer()
+                if (state.gameMode == GameMode.TIME_CHALLENGE) startTimeChallenge()
             }
-            val isFinished = newTarget == null
+            soundManager.playCorrect()
+            if (_settings.value.vibrationEnabled) soundManager.vibrateCorrect()
+
+            val newClicked = state.clickedItems + item
+            val isReverse = _settings.value.reverseMode
+            val mode = state.gameMode
+
+            val newTarget = getNextTarget(item, isReverse, state.totalItems, mode)
+            val isFinished = if (mode == GameMode.TIME_CHALLENGE) false else newTarget == null
 
             _gameState.value = state.copy(
-                clickedNumbers = newClicked,
+                clickedItems = newClicked,
                 currentTarget = newTarget ?: state.currentTarget,
                 clickCount = state.clickCount + 1,
-                wrongNumber = null,
+                wrongItem = null,
                 isFinished = isFinished,
+                lastCorrectIndex = index,
+                timeChallengeScore = state.timeChallengeScore + 1,
             )
 
             if (isFinished) onGameComplete()
         } else {
             // 错误
             soundManager.playWrong()
-            _gameState.value = state.copy(wrongNumber = number)
+            if (_settings.value.vibrationEnabled) soundManager.vibrateWrong()
+            _gameState.value = state.copy(wrongItem = item)
             viewModelScope.launch {
                 delay(400)
-                _gameState.value = _gameState.value.copy(wrongNumber = null)
+                _gameState.value = _gameState.value.copy(wrongItem = null)
+            }
+        }
+    }
+
+    private fun getNextTarget(current: String, reverse: Boolean, total: Int, mode: GameMode): String? {
+        val currentNum = when (mode) {
+            GameMode.LETTER -> letterToInt(current)
+            else -> current.toIntOrNull() ?: return null
+        } ?: return null
+
+        val nextNum = if (reverse) {
+            if (currentNum > 1) currentNum - 1 else null
+        } else {
+            if (currentNum < total) currentNum + 1 else null
+        }
+
+        return when (mode) {
+            GameMode.LETTER -> nextNum?.let { intToLetter(it) }
+            else -> nextNum?.toString()
+        }
+    }
+
+    private fun letterToInt(s: String): Int? {
+        if (s.length == 1) return s[0] - 'A' + 1
+        return ((s[0] - 'A' + 1) * 26) + (s[1] - 'A' + 1)
+    }
+
+    // ========================================================================
+    //  限时模式
+    // ========================================================================
+
+    private fun startTimeChallenge() {
+        timeChallengeJob?.cancel()
+        timeChallengeJob = viewModelScope.launch {
+            while (_gameState.value.timeRemainingSec > 0 && !_gameState.value.isPaused) {
+                delay(1000L)
+                val remaining = _gameState.value.timeRemainingSec - 1
+                _gameState.value = _gameState.value.copy(timeRemainingSec = remaining)
+                if (remaining <= 0) {
+                    // 时间到
+                    stopTimer()
+                    _gameState.value = _gameState.value.copy(isFinished = true)
+                    onGameComplete()
+                }
             }
         }
     }
@@ -187,13 +269,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private fun startTimer() {
         if (timerJob != null) return
         startTimeMs = System.currentTimeMillis()
+        pausedElapsedMs = 0L
         _gameState.value = _gameState.value.copy(timerStarted = true)
 
         timerJob = viewModelScope.launch {
             while (true) {
-                val elapsed = System.currentTimeMillis() - startTimeMs
+                val elapsed = pausedElapsedMs + (System.currentTimeMillis() - startTimeMs)
                 _gameState.value = _gameState.value.copy(elapsedMs = elapsed)
-                delay(33L) // ~30fps（省电省 CPU，计时器不需要 60fps）
+                delay(33L) // ~30fps
+            }
+        }
+    }
+
+    private fun resumeTimer() {
+        startTimeMs = System.currentTimeMillis()
+        timerJob = viewModelScope.launch {
+            while (true) {
+                val elapsed = pausedElapsedMs + (System.currentTimeMillis() - startTimeMs)
+                _gameState.value = _gameState.value.copy(elapsedMs = elapsed)
+                delay(33L)
             }
         }
     }
@@ -209,36 +303,51 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun onGameComplete() {
         stopTimer()
+        timeChallengeJob?.cancel()
         val elapsed = _gameState.value.elapsedMs
         soundManager.playComplete()
 
         val size = _gameState.value.gridSize
         val isReverse = _settings.value.reverseMode
+        val mode = _gameState.value.gameMode
 
         viewModelScope.launch {
-            recordRepo.tryUpdateBest(size, elapsed)
+            // 限时模式不计入最佳记录（只记录历史）
+            if (mode != GameMode.TIME_CHALLENGE) {
+                recordRepo.tryUpdateBest(size, elapsed)
+            }
             recordRepo.addHistory(
                 GameRecord(
                     gridSize = size,
                     elapsedMs = elapsed,
                     reverseMode = isReverse,
+                    gameMode = mode,
+                    timeChallengeScore = _gameState.value.timeChallengeScore,
                 )
             )
-            // 刷新记录显示
             _bestRecords.value = recordRepo.getAllBests()
             _history.value = recordRepo.getHistory()
         }
     }
 
     // ========================================================================
-    //  设置 —— 即时更新内存，异步持久化
+    //  设置
     // ========================================================================
 
     fun updateSettings(newSettings: AppSettings) {
         _settings.value = newSettings
-        viewModelScope.launch {
-            settingsRepo.updateSettings(newSettings)
-        }
+        viewModelScope.launch { settingsRepo.updateSettings(newSettings) }
+    }
+
+    fun setGameMode(mode: GameMode) {
+        _settings.value = _settings.value.copy(gameMode = mode)
+        viewModelScope.launch { settingsRepo.updateSettings(_settings.value) }
+        initGame()
+    }
+
+    fun setTheme(index: Int) {
+        _settings.value = _settings.value.copy(themeIndex = index)
+        viewModelScope.launch { settingsRepo.updateSettings(_settings.value) }
     }
 
     fun toggleDarkMode() {
@@ -247,6 +356,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleSound() {
         updateSettings(_settings.value.copy(soundEnabled = !_settings.value.soundEnabled))
+    }
+
+    fun toggleVibration() {
+        updateSettings(_settings.value.copy(vibrationEnabled = !_settings.value.vibrationEnabled))
     }
 
     fun toggleTimerVisibility() {
@@ -258,12 +371,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleReverseMode() {
-        val newReverse = !_settings.value.reverseMode
-        _settings.value = _settings.value.copy(reverseMode = newReverse)
-        viewModelScope.launch {
-            settingsRepo.updateSettings(_settings.value)
-        }
-        initGame() // 模式切换后重新开始
+        _settings.value = _settings.value.copy(reverseMode = !_settings.value.reverseMode)
+        viewModelScope.launch { settingsRepo.updateSettings(_settings.value) }
+        initGame()
     }
 
     fun clearRecords() {
@@ -278,6 +388,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         super.onCleared()
         stopTimer()
         countdownJob?.cancel()
+        timeChallengeJob?.cancel()
         soundManager.release()
     }
 }

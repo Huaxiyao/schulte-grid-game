@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
             val viewModel: GameViewModel = viewModel()
             val settings by viewModel.settings.collectAsState()
 
-            SchulteGridTheme(darkMode = settings.darkMode) {
+            SchulteGridTheme(darkMode = settings.darkMode, themeIndex = settings.themeIndex) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     GameScreen(viewModel = viewModel)
                 }
