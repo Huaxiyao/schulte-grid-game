@@ -29,7 +29,7 @@ class RecordRepository(private val context: Context) {
     /** 获取某个尺寸的最佳记录（毫秒），以 Flow 形式暴露 */
     fun getBestFlow(size: GridSize): Flow<Long?> =
         context.recordStore.data.map { prefs ->
-            prefs[bestKey(size.size)]?.toLongOrNull()
+            prefs[bestKey(size.size)]?.toLong()
         }
 
     /** 获取所有尺寸的最佳记录 */
@@ -38,7 +38,7 @@ class RecordRepository(private val context: Context) {
         val map = mutableMapOf<GridSize, Long>()
         GridSize.entries.forEach { size ->
             prefs[bestKey(size.size)]?.let { ms ->
-                if (ms > 0L) map[size] = ms
+                if (ms > 0L) map[size] = ms.toLong()
             }
         }
         return map
