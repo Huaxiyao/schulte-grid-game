@@ -42,7 +42,7 @@ jobs:
       - name: 📤 Upload APK to Release
         uses: ncipollo/release-action@v1
         with:
-          tag: "latest-android"
+          tag: "android-build"
           artifacts: "schulte-grid-android/app/build/outputs/apk/debug/*.apk"
           allowUpdates: true
           replacesArtifacts: true
