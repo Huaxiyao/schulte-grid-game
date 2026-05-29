@@ -219,8 +219,8 @@ private fun GameGrid(
         },
     ) { measurables, constraints ->
         val totalSize = min(constraints.maxWidth, constraints.maxHeight)
-        val cellSize = ((totalSize - gapPx * (gridSize - 1)) / gridSize).toInt()
-        val cellConstraints = Constraints(cellSize, cellSize, cellSize, cellSize)
+        val cellSizeInt = ((totalSize - gapPx * (gridSize - 1)) / gridSize.toFloat()).toInt()
+        val cellConstraints = Constraints(cellSizeInt, cellSizeInt, cellSizeInt, cellSizeInt)
         val placeables = measurables.map { it.measure(cellConstraints) }
 
         layout(totalSize, totalSize) {
@@ -228,8 +228,8 @@ private fun GameGrid(
                 val row = index / gridSize
                 val col = index % gridSize
                 placeable.placeRelative(
-                    x = (col * (cellSize + gapPx)).toInt(),
-                    y = (row * (cellSize + gapPx)).toInt(),
+                    x = (col * (cellSizeInt + gapPx)).toInt(),
+                    y = (row * (cellSizeInt + gapPx)).toInt(),
                 )
             }
         }
