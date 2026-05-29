@@ -219,7 +219,7 @@ private fun GameGrid(
         },
     ) { measurables, constraints ->
         val totalSize = min(constraints.maxWidth, constraints.maxHeight)
-        val cellSize = (totalSize - gapPx * (gridSize - 1)) / gridSize
+        val cellSize = ((totalSize - gapPx * (gridSize - 1)) / gridSize).toInt()
         val cellConstraints = Constraints(cellSize, cellSize, cellSize, cellSize)
         val placeables = measurables.map { it.measure(cellConstraints) }
 
