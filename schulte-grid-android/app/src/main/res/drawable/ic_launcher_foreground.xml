@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 5x5 网格图标 -->
+    <group
+        android:translateX="14"
+        android:translateY="14">
+        <!-- 网格线 -->
+        <path
+            android:strokeWidth="2"
+            android:strokeColor="#FFFFFF"
+            android:fillColor="#00000000"
+            android:pathData="M0,0h80v80H0z"/>
+        <!-- 竖线 -->
+        <path
+            android:strokeWidth="1.5"
+            android:strokeColor="#FFFFFF"
+            android:fillColor="#00000000"
+            android:pathData="M16,0v80M32,0v80M48,0v80M64,0v80"/>
+        <!-- 横线 -->
+        <path
+            android:strokeWidth="1.5"
+            android:strokeColor="#FFFFFF"
+            android:fillColor="#00000000"
+            android:pathData="M0,16h80M0,32h80M0,48h80M0,64h80"/>
+        <!-- 数字 1 和 2 -->
+        <path
+            android:strokeWidth="2.5"
+            android:strokeColor="#FFFFFF"
+            android:fillColor="#00000000"
+            android:strokeLineCap="round"
+            android:pathData="M24,36l-4,4v4h8M44,36v8M48,36h-4l-4,4v4h8"/>
+    </group>
+</vector>
