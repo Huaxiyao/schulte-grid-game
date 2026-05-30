@@ -1,0 +1,217 @@
+$ gh run view 26669648023 --repo Huaxiyao/pomodoro-app --log
+[exit 0]
+build	Set up job	﻿2026-05-30T00:46:08.9136060Z Current runner version: '2.334.0'
+build	Set up job	2026-05-30T00:46:08.9163136Z ##[group]Runner Image Provisioner
+build	Set up job	2026-05-30T00:46:08.9164055Z Hosted Compute Agent
+build	Set up job	2026-05-30T00:46:08.9164863Z Version: 20260520.533
+build	Set up job	2026-05-30T00:46:08.9165737Z Commit: 189110e25284a9812c124fd27b339e2fb4f2f9db
+build	Set up job	2026-05-30T00:46:08.9166399Z Build Date: 2026-05-20T17:44:04Z
+build	Set up job	2026-05-30T00:46:08.9167109Z Worker ID: {b4ba5fa4-01d6-40c8-8481-0b2113f008f1}
+build	Set up job	2026-05-30T00:46:08.9167826Z Azure Region: centralus
+build	Set up job	2026-05-30T00:46:08.9168438Z ##[endgroup]
+build	Set up job	2026-05-30T00:46:08.9169860Z ##[group]Operating System
+build	Set up job	2026-05-30T00:46:08.9170408Z Ubuntu
+build	Set up job	2026-05-30T00:46:08.9170974Z 24.04.4
+build	Set up job	2026-05-30T00:46:08.9171465Z LTS
+build	Set up job	2026-05-30T00:46:08.9171954Z ##[endgroup]
+build	Set up job	2026-05-30T00:46:08.9172490Z ##[group]Runner Image
+build	Set up job	2026-05-30T00:46:08.9173027Z Image: ubuntu-24.04
+build	Set up job	2026-05-30T00:46:08.9173568Z Version: 20260525.161.1
+build	Set up job	2026-05-30T00:46:08.9174539Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260525.161/images/ubuntu/Ubuntu2404-Readme.md
+build	Set up job	2026-05-30T00:46:08.9176378Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260525.161
+build	Set up job	2026-05-30T00:46:08.9177262Z ##[endgroup]
+build	Set up job	2026-05-30T00:46:08.9178419Z ##[group]GITHUB_TOKEN Permissions
+build	Set up job	2026-05-30T00:46:08.9180557Z Contents: read
+build	Set up job	2026-05-30T00:46:08.9181252Z Metadata: read
+build	Set up job	2026-05-30T00:46:08.9181781Z Packages: read
+build	Set up job	2026-05-30T00:46:08.9182592Z ##[endgroup]
+build	Set up job	2026-05-30T00:46:08.9184627Z Secret source: Actions
+build	Set up job	2026-05-30T00:46:08.9185843Z Prepare workflow directory
+build	Set up job	2026-05-30T00:46:08.9495061Z Prepare all required actions
+build	Set up job	2026-05-30T00:46:08.9532141Z Getting action download info
+build	Set up job	2026-05-30T00:46:09.3946562Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+build	Set up job	2026-05-30T00:46:09.5047614Z Download action repository 'actions/setup-java@v4' (SHA:c1e323688fd81a25caa38c78aa6df2d33d3e20d9)
+build	Set up job	2026-05-30T00:46:09.9711487Z Download action repository 'gradle/actions@v3' (SHA:d9c87d481d55275bb5441eef3fe0e46805f9ef70)
+build	Set up job	2026-05-30T00:46:10.8183832Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+build	Set up job	2026-05-30T00:46:11.0142013Z Complete job name: build
+build	Checkout	﻿2026-05-30T00:46:11.0904313Z ##[group]Run actions/checkout@v4
+build	Checkout	2026-05-30T00:46:11.0905300Z with:
+build	Checkout	2026-05-30T00:46:11.0905712Z   repository: Huaxiyao/pomodoro-app
+build	Checkout	2026-05-30T00:46:11.0908859Z   token: ***
+build	Checkout	2026-05-30T00:46:11.0909179Z   ssh-strict: true
+build	Checkout	2026-05-30T00:46:11.0909517Z   ssh-user: git
+build	Checkout	2026-05-30T00:46:11.0909858Z   persist-credentials: true
+build	Checkout	2026-05-30T00:46:11.0910216Z   clean: true
+build	Checkout	2026-05-30T00:46:11.0910557Z   sparse-checkout-cone-mode: true
+build	Checkout	2026-05-30T00:46:11.0910982Z   fetch-depth: 1
+build	Checkout	2026-05-30T00:46:11.0911318Z   fetch-tags: false
+build	Checkout	2026-05-30T00:46:11.0911654Z   show-progress: true
+build	Checkout	2026-05-30T00:46:11.0911984Z   lfs: false
+build	Checkout	2026-05-30T00:46:11.0912291Z   submodules: false
+build	Checkout	2026-05-30T00:46:11.0912626Z   set-safe-directory: true
+build	Checkout	2026-05-30T00:46:11.0913288Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.1957274Z Syncing repository: Huaxiyao/pomodoro-app
+build	Checkout	2026-05-30T00:46:11.1958889Z ##[group]Getting Git version info
+build	Checkout	2026-05-30T00:46:11.1959461Z Working directory is '/home/runner/work/pomodoro-app/pomodoro-app'
+build	Checkout	2026-05-30T00:46:11.1960352Z [command]/usr/bin/git version
+build	Checkout	2026-05-30T00:46:11.1997979Z git version 2.54.0
+build	Checkout	2026-05-30T00:46:11.2020481Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.2033183Z Temporarily overriding HOME='/home/runner/work/_temp/8b32f446-ca20-4ee0-960c-34ebbc3e2245' before making global git config changes
+build	Checkout	2026-05-30T00:46:11.2034331Z Adding repository directory to the temporary git global config as a safe directory
+build	Checkout	2026-05-30T00:46:11.2045944Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/pomodoro-app/pomodoro-app
+build	Checkout	2026-05-30T00:46:11.2081095Z Deleting the contents of '/home/runner/work/pomodoro-app/pomodoro-app'
+build	Checkout	2026-05-30T00:46:11.2084145Z ##[group]Initializing the repository
+build	Checkout	2026-05-30T00:46:11.2089729Z [command]/usr/bin/git init /home/runner/work/pomodoro-app/pomodoro-app
+build	Checkout	2026-05-30T00:46:11.2152422Z hint: Using 'master' as the name for the initial branch. This default branch name
+build	Checkout	2026-05-30T00:46:11.2153761Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build	Checkout	2026-05-30T00:46:11.2154420Z hint: to use in all of your new repositories, which will suppress this warning,
+build	Checkout	2026-05-30T00:46:11.2155126Z hint: call:
+build	Checkout	2026-05-30T00:46:11.2155589Z hint:
+build	Checkout	2026-05-30T00:46:11.2156029Z hint: 	git config --global init.defaultBranch <name>
+build	Checkout	2026-05-30T00:46:11.2156662Z hint:
+build	Checkout	2026-05-30T00:46:11.2157333Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build	Checkout	2026-05-30T00:46:11.2158406Z hint: 'development'. The just-created branch can be renamed via this command:
+build	Checkout	2026-05-30T00:46:11.2159267Z hint:
+build	Checkout	2026-05-30T00:46:11.2159772Z hint: 	git branch -m <name>
+build	Checkout	2026-05-30T00:46:11.2160334Z hint:
+build	Checkout	2026-05-30T00:46:11.2161077Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build	Checkout	2026-05-30T00:46:11.2162255Z Initialized empty Git repository in /home/runner/work/pomodoro-app/pomodoro-app/.git/
+build	Checkout	2026-05-30T00:46:11.2168598Z [command]/usr/bin/git remote add origin https://github.com/Huaxiyao/pomodoro-app
+build	Checkout	2026-05-30T00:46:11.2201130Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.2201781Z ##[group]Disabling automatic garbage collection
+build	Checkout	2026-05-30T00:46:11.2204804Z [command]/usr/bin/git config --local gc.auto 0
+build	Checkout	2026-05-30T00:46:11.2227345Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.2228254Z ##[group]Setting up auth
+build	Checkout	2026-05-30T00:46:11.2234217Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Checkout	2026-05-30T00:46:11.2259830Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Checkout	2026-05-30T00:46:11.2508857Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Checkout	2026-05-30T00:46:11.2530740Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Checkout	2026-05-30T00:46:11.2690405Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Checkout	2026-05-30T00:46:11.2717384Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Checkout	2026-05-30T00:46:11.2882408Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build	Checkout	2026-05-30T00:46:11.2909033Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.2909711Z ##[group]Fetching the repository
+build	Checkout	2026-05-30T00:46:11.2916609Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +67415b7740b66348b412d43484fe11660face7ec:refs/remotes/origin/master
+build	Checkout	2026-05-30T00:46:11.5999735Z From https://github.com/Huaxiyao/pomodoro-app
+build	Checkout	2026-05-30T00:46:11.6000337Z  * [new ref]         67415b7740b66348b412d43484fe11660face7ec -> origin/master
+build	Checkout	2026-05-30T00:46:11.6025988Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.6026698Z ##[group]Determining the checkout info
+build	Checkout	2026-05-30T00:46:11.6027951Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.6033095Z [command]/usr/bin/git sparse-checkout disable
+build	Checkout	2026-05-30T00:46:11.6067453Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+build	Checkout	2026-05-30T00:46:11.6086545Z ##[group]Checking out the ref
+build	Checkout	2026-05-30T00:46:11.6090101Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+build	Checkout	2026-05-30T00:46:11.6139167Z Reset branch 'master'
+build	Checkout	2026-05-30T00:46:11.6139875Z branch 'master' set up to track 'origin/master'.
+build	Checkout	2026-05-30T00:46:11.6146670Z ##[endgroup]
+build	Checkout	2026-05-30T00:46:11.6174470Z [command]/usr/bin/git log -1 --format=%H
+build	Checkout	2026-05-30T00:46:11.6191289Z 67415b7740b66348b412d43484fe11660face7ec
+build	Set up JDK 17	﻿2026-05-30T00:46:11.6416161Z ##[group]Run actions/setup-java@v4
+build	Set up JDK 17	2026-05-30T00:46:11.6416485Z with:
+build	Set up JDK 17	2026-05-30T00:46:11.6416689Z   java-version: 17
+build	Set up JDK 17	2026-05-30T00:46:11.6416912Z   distribution: temurin
+build	Set up JDK 17	2026-05-30T00:46:11.6417131Z   java-package: jdk
+build	Set up JDK 17	2026-05-30T00:46:11.6417482Z   check-latest: false
+build	Set up JDK 17	2026-05-30T00:46:11.6417695Z   server-id: github
+build	Set up JDK 17	2026-05-30T00:46:11.6417912Z   server-username: GITHUB_ACTOR
+build	Set up JDK 17	2026-05-30T00:46:11.6418163Z   server-password: GITHUB_TOKEN
+build	Set up JDK 17	2026-05-30T00:46:11.6418421Z   overwrite-settings: true
+build	Set up JDK 17	2026-05-30T00:46:11.6418650Z   job-status: success
+build	Set up JDK 17	2026-05-30T00:46:11.6421412Z   token: ***
+build	Set up JDK 17	2026-05-30T00:46:11.6421611Z ##[endgroup]
+build	Set up JDK 17	2026-05-30T00:46:11.8266831Z ##[group]Installed distributions
+build	Set up JDK 17	2026-05-30T00:46:11.8559996Z Resolved Java 17.0.19+10 from tool-cache
+build	Set up JDK 17	2026-05-30T00:46:11.8575197Z Setting Java 17.0.19+10 as the default
+build	Set up JDK 17	2026-05-30T00:46:11.8586469Z Creating toolchains.xml for JDK version 17 from temurin
+build	Set up JDK 17	2026-05-30T00:46:11.8641497Z Writing to /home/runner/.m2/toolchains.xml
+build	Set up JDK 17	2026-05-30T00:46:11.8642345Z 
+build	Set up JDK 17	2026-05-30T00:46:11.8643004Z Java configuration:
+build	Set up JDK 17	2026-05-30T00:46:11.8643505Z   Distribution: temurin
+build	Set up JDK 17	2026-05-30T00:46:11.8643912Z   Version: 17.0.19+10
+build	Set up JDK 17	2026-05-30T00:46:11.8644430Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.19-10/x64
+build	Set up JDK 17	2026-05-30T00:46:11.8645129Z 
+build	Set up JDK 17	2026-05-30T00:46:11.8645634Z ##[endgroup]
+build	Set up JDK 17	2026-05-30T00:46:11.8661159Z Creating settings.xml with server-id: github
+build	Set up JDK 17	2026-05-30T00:46:11.8684740Z Writing to /home/runner/.m2/settings.xml
+build	Setup Gradle	﻿2026-05-30T00:46:11.8874456Z ##[group]Run gradle/actions/setup-gradle@v3
+build	Setup Gradle	2026-05-30T00:46:11.8874770Z with:
+build	Setup Gradle	2026-05-30T00:46:11.8875164Z   gradle-version: 8.5
+build	Setup Gradle	2026-05-30T00:46:11.8875386Z   cache-disabled: false
+build	Setup Gradle	2026-05-30T00:46:11.8875610Z   cache-read-only: false
+build	Setup Gradle	2026-05-30T00:46:11.8875843Z   cache-write-only: false
+build	Setup Gradle	2026-05-30T00:46:11.8876086Z   cache-overwrite-existing: false
+build	Setup Gradle	2026-05-30T00:46:11.8876398Z   gradle-home-cache-includes: caches
+build	Setup Gradle	notifications
+build	Setup Gradle	
+build	Setup Gradle	2026-05-30T00:46:11.8876763Z   gradle-home-cache-cleanup: false
+build	Setup Gradle	2026-05-30T00:46:11.8877022Z   add-job-summary: always
+build	Setup Gradle	2026-05-30T00:46:11.8877269Z   add-job-summary-as-pr-comment: never
+build	Setup Gradle	2026-05-30T00:46:11.8877542Z   dependency-graph: disabled
+build	Setup Gradle	2026-05-30T00:46:11.8877818Z   dependency-graph-continue-on-failure: true
+build	Setup Gradle	2026-05-30T00:46:11.8878129Z   build-scan-publish: false
+build	Setup Gradle	2026-05-30T00:46:11.8878372Z   validate-wrappers: false
+build	Setup Gradle	2026-05-30T00:46:11.8878608Z   generate-job-summary: true
+build	Setup Gradle	2026-05-30T00:46:11.8878860Z   gradle-home-cache-strict-match: false
+build	Setup Gradle	2026-05-30T00:46:11.8879139Z   workflow-job-context: null
+build	Setup Gradle	2026-05-30T00:46:11.8881833Z   github-token: ***
+build	Setup Gradle	2026-05-30T00:46:11.8882032Z env:
+build	Setup Gradle	2026-05-30T00:46:11.8882320Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.19-10/x64
+build	Setup Gradle	2026-05-30T00:46:11.8882803Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.19-10/x64
+build	Setup Gradle	2026-05-30T00:46:11.8883175Z ##[endgroup]
+build	Setup Gradle	2026-05-30T00:46:15.3637297Z Merged default JDK locations into /home/runner/.m2/toolchains.xml
+build	Setup Gradle	2026-05-30T00:46:15.3640008Z ##[group]Restore Gradle state from cache
+build	Setup Gradle	2026-05-30T00:46:15.4711380Z ##[warning]Failed to restore gradle-home-v1|Linux|build[620c74083efa5b88ef904c2356f72d31]-67415b7740b66348b412d43484fe11660face7ec: Error: Cache service responded with 400
+build	Setup Gradle	2026-05-30T00:46:15.4770130Z Gradle User Home cache not found. Will initialize empty.
+build	Setup Gradle	2026-05-30T00:46:15.4771206Z ##[endgroup]
+build	Setup Gradle	2026-05-30T00:46:15.5919646Z ##[group]Provision Gradle 8.5
+build	Setup Gradle	2026-05-30T00:46:15.6413433Z ##[warning]Restore Gradle distribution 8.5 failed: Error: Cache service responded with 400
+build	Setup Gradle	2026-05-30T00:46:15.6415913Z Gradle distribution 8.5 not found in cache. Will download.
+build	Setup Gradle	2026-05-30T00:46:16.7171295Z Downloaded https://services.gradle.org/distributions/gradle-8.5-bin.zip to /home/runner/gradle-installations/downloads/gradle-8.5-bin.zip (size 132519731)
+build	Setup Gradle	2026-05-30T00:46:16.7329056Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/pomodoro-app/pomodoro-app --files-from manifest.txt --use-compress-program zstdmt
+build	Setup Gradle	2026-05-30T00:46:16.9044549Z ##[warning]Save Gradle distribution 8.5 failed: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0WDMaagAAAABZh48UI8S9T6lEISVpg+XRTVNQMzExMDAwMTAxMDMzAEVkZ2U=
+build	Setup Gradle	2026-05-30T00:46:16.9073999Z [command]/usr/bin/unzip -o -q /home/runner/gradle-installations/downloads/gradle-8.5-bin.zip
+build	Setup Gradle	2026-05-30T00:46:17.8893106Z Extracted Gradle 8.5 to /home/runner/gradle-installations/installs/gradle-8.5
+build	Setup Gradle	2026-05-30T00:46:17.8894373Z Provisioned Gradle executable /home/runner/gradle-installations/installs/gradle-8.5/bin/gradle
+build	Setup Gradle	2026-05-30T00:46:17.8895465Z ##[endgroup]
+build	Build debug APK	﻿2026-05-30T00:46:17.8994173Z ##[group]Run ./gradlew assembleDebug
+build	Build debug APK	2026-05-30T00:46:17.8994592Z ^[[36;1m./gradlew assembleDebug^[[0m
+build	Build debug APK	2026-05-30T00:46:17.9014416Z shell: /usr/bin/bash -e {0}
+build	Build debug APK	2026-05-30T00:46:17.9014711Z env:
+build	Build debug APK	2026-05-30T00:46:17.9015428Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.19-10/x64
+build	Build debug APK	2026-05-30T00:46:17.9015968Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.19-10/x64
+build	Build debug APK	2026-05-30T00:46:17.9016377Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+build	Build debug APK	2026-05-30T00:46:17.9016693Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+build	Build debug APK	2026-05-30T00:46:17.9017012Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+build	Build debug APK	2026-05-30T00:46:17.9017429Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+build	Build debug APK	2026-05-30T00:46:17.9017895Z   DEVELOCITY_AUTO_INJECTION_CUSTOM_VALUE: gradle-actions
+build	Build debug APK	2026-05-30T00:46:17.9018229Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+build	Build debug APK	2026-05-30T00:46:17.9018487Z ##[endgroup]
+build	Build debug APK	2026-05-30T00:46:17.9076790Z /home/runner/work/_temp/6b079409-1ee2-4d36-99f6-907d749c0ab3.sh: line 1: ./gradlew: No such file or directory
+build	Build debug APK	2026-05-30T00:46:17.9083374Z ##[error]Process completed with exit code 127.
+build	Post Setup Gradle	﻿2026-05-30T00:46:17.9299191Z Post job cleanup.
+build	Post Setup Gradle	2026-05-30T00:46:18.1521523Z In post-action step
+build	Post Setup Gradle	2026-05-30T00:46:18.1527261Z Stopping all Gradle daemons before saving Gradle User Home state
+build	Post Setup Gradle	2026-05-30T00:46:18.1530253Z ##[group]Caching Gradle state
+build	Post Setup Gradle	2026-05-30T00:46:18.1634141Z Caching Gradle User Home with cache key: gradle-home-v1|Linux|build[620c74083efa5b88ef904c2356f72d31]-67415b7740b66348b412d43484fe11660face7ec
+build	Post Setup Gradle	2026-05-30T00:46:18.1799657Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/pomodoro-app/pomodoro-app --files-from manifest.txt --use-compress-program zstdmt
+build	Post Setup Gradle	2026-05-30T00:46:18.2734135Z ##[warning]Failed to save cache entry with path '/home/runner/.gradle/caches,/home/runner/.gradle/notifications,/home/runner/.gradle/.setup-gradle' and key: gradle-home-v1|Linux|build[620c74083efa5b88ef904c2356f72d31]-67415b7740b66348b412d43484fe11660face7ec: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0WjMaagAAAAARHhvyuRdORYStBYXt6dOITVNQMzExMDAwMTA1MDM5AEVkZ2U=
+build	Post Setup Gradle	2026-05-30T00:46:18.2807831Z ##[endgroup]
+build	Post Setup Gradle	2026-05-30T00:46:18.2811793Z Generating Job Summary
+build	Post Setup Gradle	2026-05-30T00:46:18.2823477Z Completed post-action step
+build	Post Set up JDK 17	﻿2026-05-30T00:46:18.2957055Z Post job cleanup.
+build	Post Checkout	﻿2026-05-30T00:46:18.4621239Z Post job cleanup.
+build	Post Checkout	2026-05-30T00:46:18.5516650Z [command]/usr/bin/git version
+build	Post Checkout	2026-05-30T00:46:18.5547988Z git version 2.54.0
+build	Post Checkout	2026-05-30T00:46:18.5585043Z Temporarily overriding HOME='/home/runner/work/_temp/83d153f0-9ac4-4a67-99bd-f504f3c6d649' before making global git config changes
+build	Post Checkout	2026-05-30T00:46:18.5585849Z Adding repository directory to the temporary git global config as a safe directory
+build	Post Checkout	2026-05-30T00:46:18.5591189Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/pomodoro-app/pomodoro-app
+build	Post Checkout	2026-05-30T00:46:18.5621947Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Post Checkout	2026-05-30T00:46:18.5648843Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Post Checkout	2026-05-30T00:46:18.5816089Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Post Checkout	2026-05-30T00:46:18.5835606Z http.https://github.com/.extraheader
+build	Post Checkout	2026-05-30T00:46:18.5846380Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+build	Post Checkout	2026-05-30T00:46:18.5871661Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Post Checkout	2026-05-30T00:46:18.6035425Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Post Checkout	2026-05-30T00:46:18.6059606Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Complete job	﻿2026-05-30T00:46:18.6315700Z Cleaning up orphan processes
+build	Complete job	2026-05-30T00:46:18.6510314Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-java@v4, gradle/actions/setup-gradle@v3. Actions will be forced to run with Node.js 24 by default starting June 16th, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

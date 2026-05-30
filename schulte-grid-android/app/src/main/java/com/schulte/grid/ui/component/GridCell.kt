@@ -1,7 +1,5 @@
 package com.schulte.grid.ui.component
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -10,12 +8,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,11 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.schulte.grid.model.GameMode
 
 /**
- * 单个方格
- *
- * - 支持数字/字母
- * - 零痕迹模式：点对后不变色（但仍显示完成动画 ✓）
- * - 完成缩放动画
+ * 单个方格（扁平设计）
  */
 @Composable
 fun GridCell(
@@ -41,9 +33,9 @@ fun GridCell(
     modifier: Modifier = Modifier,
     gridSize: Int = 5,
 ) {
-    val shape = remember { RoundedCornerShape(10.dp) }
+    val radius = if (gridSize >= 6) 6.dp else 8.dp
+    val shape = remember(radius) { RoundedCornerShape(radius) }
 
-    // 零痕迹：点对不变色，但小字 ✓ 仍然显示
     val visualDone = isDone && gameMode != GameMode.ZERO_TRACE
 
     val bgColor: Color = when {
@@ -58,13 +50,6 @@ fun GridCell(
         else -> MaterialTheme.colorScheme.onSurface
     }
 
-    // 完成缩放
-    val scale by animateFloatAsState(
-        targetValue = if (isDone) 0.88f else 1f,
-        animationSpec = tween(200),
-        label = "cellScale",
-    )
-
     val fontSize = when (gridSize) {
         3 -> 32.sp; 4 -> 24.sp; 5 -> 20.sp; 6 -> 17.sp; 7 -> 14.sp
         else -> 20.sp
@@ -75,7 +60,6 @@ fun GridCell(
             .aspectRatio(1f)
             .clip(shape)
             .background(bgColor, shape)
-            .scale(scale)
             .then(
                 if (!isDone) Modifier.clickable(enabled = true, onClick = onClick)
                 else Modifier
@@ -83,7 +67,7 @@ fun GridCell(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = item, // 点过后不变成 ✓，保留数字可见
+            text = item,
             color = textColor,
             fontSize = fontSize,
             fontWeight = FontWeight.SemiBold,
